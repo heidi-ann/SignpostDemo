@@ -45,7 +45,7 @@ let udp_handler ~content ~dst =
             let _ = Store.set_initial_timestamp hostname (Unix.gettimeofday ()) in
             let initTs = Int64.of_float ((Unix.gettimeofday ()) *. 1000.0)  in 
             Lwt.ignore_result (Udp_server.send_datagram (sprintf "server;0;%Ld;" initTs) 
-                             (ADDR_INET(inet_addr, _port)));
+                             (ADDR_INET(inet_addr, 20000)));
             Printf.printf "Device: %s (seq:0 - %Ld)\n%!" hostname initTs;
               return ()
           end
@@ -56,7 +56,7 @@ let udp_handler ~content ~dst =
             let currentTs = Unix.gettimeofday () in 
             let current_time = Int64.of_float ((Unix.gettimeofday ()) *. 1000.0)  in 
             Lwt.ignore_result (Udp_server.send_datagram (sprintf "server;1;%Ld;" current_time)
-                             (ADDR_INET(inet_addr, _port)));
+                             (ADDR_INET(inet_addr, 20000)));
             Printf.printf "Device: %s (seq:1 - %f) Initial time: %f\n%!" hostname currentTs initialTime;
             let elapsedTime = (currentTs -. initialTime) in
 (*             let jitterVal = Int64.sub current_time initialTime in *)

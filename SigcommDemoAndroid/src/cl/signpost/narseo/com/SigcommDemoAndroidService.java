@@ -351,7 +351,11 @@ public class SigcommDemoAndroidService extends Service implements Runnable{
 			udpSeqNumber = 0;
 		      
 		    try {
-				DatagramSocket clientSocket = new DatagramSocket();
+				DatagramSocket clientSocketSnd = new DatagramSocket();
+
+				/*attempt to work around issues with jitter/RRT*/
+
+				DatagramSocket clientSocketRcv = new DatagramSocket(20000);
 				clientSocket.setSoTimeout(1000);
 
 		      while (testAlive) {
@@ -364,11 +368,11 @@ public class SigcommDemoAndroidService extends Service implements Runnable{
 
 			        byte[] data = p0.getBytes();
 			        DatagramPacket dpSend = new DatagramPacket(data, data.length, server, port);
-			        clientSocket.send(dpSend);
+			        clientSocketSnd.send(dpSend);
 			        
 			        /*Wait for server response and client estimate RTT*/
 			        DatagramPacket dpReceive = new DatagramPacket(receiveData, receiveData.length);			         
-			        clientSocket.receive(dpReceive);
+			        clientSocketRcv.receive(dpReceive);
 			        long t2 = System.currentTimeMillis();
 			        String r1 = new String(dpReceive.getData(), 0, dpReceive.getLength());
 			        Log.i(TAG, "Server UDP 1st response: "+r1);
@@ -379,11 +383,11 @@ public class SigcommDemoAndroidService extends Service implements Runnable{
 
 			        data = p1.getBytes();
 			        dpSend = new DatagramPacket(data, data.length,server, port);			        
-			        clientSocket.send(dpSend);
+			        clientSocketSnd.send(dpSend);
 
 			        //Wait for final server response
 			        dpReceive = new DatagramPacket(receiveData, receiveData.length);			         
-			        clientSocket.receive(dpReceive);
+			        clientSocketRcv.receive(dpReceive);
 			        
 			        /*
 			         * Compute jitter and RTT
@@ -416,7 +420,8 @@ public class SigcommDemoAndroidService extends Service implements Runnable{
 			    	e.printStackTrace();
 			    }
 		      }
-		      clientSocket.close();
+		      clientSocketSnd.close();
+		      clientSocketRcv.close();
 		    }
 		    catch (Exception ex) {
 		      Log.e(TAG, "Exception on UdpSender thread> "+ex.getMessage());
